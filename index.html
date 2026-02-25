@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚾ Number Baseball Game ⚾</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-wrapper {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 1400px;
+            width: 100%;
+            position: relative;
+        }
+
+        h1 {
+            text-align: center;
+            color: #4a5568;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .credit {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+            font-style: italic;
+        }
+
+        .setup-section {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 15px;
+        }
+
+        .player-count-buttons, .digit-count-buttons {
+            margin: 20px 0;
+        }
+
+        .digit-selection {
+            margin: 20px 0;
+            padding: 15px;
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+
+        .digit-selection h3 {
+            color: #4a5568;
+            margin-bottom: 10px;
+        }
+
+        .digit-btn {
+            padding: 12px 25px;
+            margin: 0 8px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            background: #cbd5e0;
+            color: #2d3748;
+            transition: all 0.3s;
+        }
+
+        .digit-btn.active {
+            background: #9f7aea;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .player-count-btn {
+            padding: 12px 30px;
+            margin: 0 10px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            background: #e2e8f0;
+            color: #4a5568;
+            transition: all 0.3s;
+        }
+
+        .player-count-btn.active {
+            background: #667eea;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .game-start-btn {
+            padding: 15px 50px;
+            font-size: 1.3em;
+            background: #48bb78;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+
+        .game-start-btn:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+        }
+
+        .replay-btn {
+            padding: 15px 50px;
+            font-size: 1.3em;
+            background: #9f7aea;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .replay-btn:hover {
+            background: #805ad5;
+            transform: translateY(-2px);
+        }
+
+        .players-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .player-card {
+            flex: 1 1 250px;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .player-card.active-turn {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 3px #fff, 0 0 0 6px #667eea;
+        }
+
+        .player-card.eliminated {
+            opacity: 0.5;
+            filter: grayscale(50%);
+        }
+
+        .player-card.winner {
+            animation: winnerPulse 1s ease-in-out 3;
+            box-shadow: 0 0 20px gold;
+        }
+
+        .player-card.strike-effect {
+            animation: strikePop 0.5s ease-out;
+        }
+
+        .player-card.out-effect {
+            animation: outExplosion 0.8s ease-out;
+        }
+
+        @keyframes strikePop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); background-color: #ffeaa7; }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes outExplosion {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); background-color: #ff7675; opacity: 0.8; }
+            100% { transform: scale(1); opacity: 0.5; }
+        }
+
+        @keyframes winnerPulse {
+            0% { transform: scale(1); box-shadow: 0 0 10px gold; }
+            50% { transform: scale(1.05); box-shadow: 0 0 30px gold; }
+            100% { transform: scale(1); box-shadow: 0 0 10px gold; }
+        }
+
+        .player-1 { background: #FFB6C1; }  /* Pastel Pink */
+        .player-2 { background: #FFD700; }  /* Pastel Yellow */
+        .player-3 { background: #98FB98; }  /* Pastel Green */
+        .player-4 { background: #87CEEB; }  /* Pastel Blue */
+
+        .player-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #2d3748;
+        }
+
+        .secret-number {
+            font-size: 1.5em;
+            letter-spacing: 5px;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .hidden-number {
+            filter: blur(5px);
+            user-select: none;
+        }
+
+        .guess-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px dashed rgba(0,0,0,0.1);
+        }
+
+        .guess-input {
+            width: 80%;
+            padding: 8px;
+            margin: 10px 0;
+            border: 2px solid #cbd5e0;
+            border-radius: 8px;
+            font-size: 1.1em;
+            text-align: center;
+        }
+
+        .guess-btn {
+            padding: 8px 20px;
+            background: #4299e1;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-top: 5px;
+        }
+
+        .guess-btn:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+        }
+
+        .results-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .result-item {
+            background: rgba(255,255,255,0.3);
+            border-radius: 8px;
+            padding: 8px;
+            font-size: 0.9em;
+            transition: all 0.3s;
+        }
+
+        .result-item.strike-flash {
+            animation: resultFlash 0.5s ease-out;
+        }
+
+        @keyframes resultFlash {
+            0% { background: rgba(255,255,255,0.3); }
+            50% { background: #ffd700; transform: scale(1.05); }
+            100% { background: rgba(255,255,255,0.3); }
+        }
+
+        .result-header {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #2d3748;
+        }
+
+        .result-badge {
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .strike { color: #e53e3e; }
+        .ball { color: #3182ce; }
+
+        .current-guess {
+            background: #4299e1;
+            color: white;
+            padding: 5px;
+            border-radius: 5px;
+            margin-top: 5px;
+            font-size: 0.9em;
+        }
+
+        .log-section {
+            background: #2d3748;
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        .log-title {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            color: #a0aec0;
+        }
+
+        .log-container {
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+            background: #1a202c;
+            border-radius: 10px;
+        }
+
+        .log-entry {
+            padding: 5px 10px;
+            margin: 5px 0;
+            background: #4a5568;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+
+        .game-status {
+            text-align: center;
+            font-size: 1.3em;
+            margin: 20px 0;
+            padding: 15px;
+            background: #edf2f7;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #a0aec0;
+            font-size: 0.9em;
+        }
+
+        /* Confetti effect for winner */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            position: absolute;
+            top: -10px;
+            border-radius: 50%;
+            animation: confettiFall 3s ease-in-out;
+            z-index: 1000;
+        }
+
+        @keyframes confettiFall {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-wrapper">
+        <h1>⚾  Number Baseball Game ⚾</h1>
+        <div class ="credit">made by Jong</div>
+
+        <!-- Game Setup Section -->
+        <div class="setup-section" id="setupSection">
+            <h2>👥 Select Number of Players</h2>
+            <div class="player-count-buttons">
+                <button class="player-count-btn" onclick="setPlayerCount(2)">2 Players</button>
+                <button class="player-count-btn" onclick="setPlayerCount(3)">3 Players</button>
+                <button class="player-count-btn" onclick="setPlayerCount(4)">4 Players</button>
+            </div>
+
+            <div class="digit-selection">
+                <h3>🔢 Select Number of Digits</h3>
+                <div class="digit-count-buttons">
+                    <button class="digit-btn" onclick="setDigitCount(3)">3 Digits</button>
+                    <button class="digit-btn active" onclick="setDigitCount(4)">4 Digits</button>
+                    <button class="digit-btn" onclick="setDigitCount(5)">5 Digits</button>
+                    <button class="digit-btn" onclick="setDigitCount(6)">6 Digits</button>
+                </div>
+            </div>
+
+            <button class="game-start-btn" onclick="startGame()">🎮 Start Game</button>
+            <button class="replay-btn" id="replayBtn" onclick="resetGame()">🔄 Play Again</button>
+        </div>
+
+        <!-- Player Cards Container -->
+        <div class="players-container" id="playersContainer"></div>
+
+        <!-- Game Status -->
+        <div class="game-status" id="gameStatus">Select players and digits, then start the game</div>
+
+        <!-- Log Section -->
+        <div class="log-section">
+            <div class="log-title">📋 Game Log</div>
+            <div class="log-container" id="logContainer"></div>
+        </div>
+        
+        <div class="footer">© 2024 Jong's Baseball Game</div>
+    </div>
+
+    <script>
+        let gameState = {
+            playerCount: 2,
+            digitCount: 4, // Default 4 digits
+            players: [],
+            currentTurn: 0,
+            gamePhase: 'setup', // setup, setting, playing, ended
+            gameStarted: false,
+            eliminatedPlayers: [],
+            lastGuess: null,
+            lastGuesser: null
+        };
+
+        const playerColors = ['player-1', 'player-2', 'player-3', 'player-4'];
+        const playerNames = ['Player 1', 'Player 2', 'Player 3', 'Player 4'];
+
+        function setPlayerCount(count) {
+            gameState.playerCount = count;
+            
+            // Button active style
+            document.querySelectorAll('.player-count-btn').forEach((btn, index) => {
+                if (index === 0 && count === 2) btn.classList.add('active');
+                else if (index === 1 && count === 3) btn.classList.add('active');
+                else if (index === 2 && count === 4) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+
+            // Initialize player cards only if in setup phase
+            if (gameState.gamePhase === 'setup') {
+                initializePlayers();
+            }
+        }
+
+        function setDigitCount(digits) {
+            gameState.digitCount = digits;
+            
+            // Button active style
+            document.querySelectorAll('.digit-btn').forEach((btn, index) => {
+                if (index === 0 && digits === 3) btn.classList.add('active');
+                else if (index === 1 && digits === 4) btn.classList.add('active');
+                else if (index === 2 && digits === 5) btn.classList.add('active');
+                else if (index === 3 && digits === 6) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+
+            addLog(`🔢 Digit count set to ${digits}`);
+        }
+
+        function initializePlayers() {
+            gameState.players = [];
+            for (let i = 0; i < gameState.playerCount; i++) {
+                gameState.players.push({
+                    id: i,
+                    secretNumber: '',
+                    isReady: false,
+                    guesses: [],
+                    results: [], // Store results from opponents
+                    eliminated: false,
+                    hasSetNumber: false
+                });
+            }
+            renderPlayers();
+        }
+
+        function resetGame() {
+            // Hide replay button
+            document.getElementById('replayBtn').style.display = 'none';
+            
+            // Clear log
+            document.getElementById('logContainer').innerHTML = '';
+            
+            // Reset game state
+            gameState = {
+                playerCount: gameState.playerCount,
+                digitCount: gameState.digitCount, // Keep current digit count
+                players: [],
+                currentTurn: 0,
+                gamePhase: 'setup',
+                gameStarted: false,
+                eliminatedPlayers: [],
+                lastGuess: null,
+                lastGuesser: null
+            };
+            
+            // Show setup section with start button
+            document.getElementById('setupSection').style.display = 'block';
+            document.querySelector('.game-start-btn').style.display = 'inline-block';
+            
+            // Reinitialize players
+            initializePlayers();
+            
+            // Update game status
+            updateGameStatus('Select players and digits, then start the game');
+            
+            // Add reset log
+            addLog('🔄 Game has been reset');
+        }
+
+        function renderPlayers() {
+            const container = document.getElementById('playersContainer');
+            container.innerHTML = '';
+
+            for (let i = 0; i < gameState.playerCount; i++) {
+                const player = gameState.players[i];
+                const isActive = gameState.gamePhase === 'setting' && gameState.currentTurn === i && !player.hasSetNumber;
+                const isPlaying = gameState.gamePhase === 'playing' && gameState.currentTurn === i && !player.eliminated;
+                
+                const playerCard = document.createElement('div');
+                playerCard.className = `player-card ${playerColors[i]} ${player.eliminated ? 'eliminated' : ''} ${(isActive || isPlaying) ? 'active-turn' : ''}`;
+                playerCard.id = `player-${i}`;
+
+                let content = `
+                    <div class="player-name">${playerNames[i]}</div>
+                `;
+
+                if (gameState.gamePhase === 'setting') {
+                    // Number setting phase
+                    if (!player.hasSetNumber) {
+                        content += `
+                            <input type="text" class="guess-input" id="secret-${i}" maxlength="${gameState.digitCount}" placeholder="${gameState.digitCount}-digit number">
+                            <button class="guess-btn" onclick="setSecretNumber(${i})">Set Number</button>
+                        `;
+                    } else {
+                        content += `
+                            <div class="secret-number">✅ Set Complete</div>
+                        `;
+                    }
+                } else if (gameState.gamePhase === 'playing' || gameState.gamePhase === 'ended') {
+                    // Game play phase - Show secret numbers
+                    if (player.eliminated) {
+                        content += `
+                            <div class="secret-number">❌ Out (${player.secretNumber})</div>
+                        `;
+                    } else {
+                        content += `
+                            <div class="secret-number ${gameState.gamePhase === 'playing' ? 'hidden-number' : ''}">${player.secretNumber || '?'.repeat(gameState.digitCount)}</div>
+                        `;
+                    }
+
+                    // Guess input section (only for current player during playing phase)
+                    if (gameState.gamePhase === 'playing' && gameState.currentTurn === i && !player.eliminated) {
+                        content += `
+                            <div class="guess-section">
+                                <input type="text" class="guess-input" id="guess-${i}" maxlength="${gameState.digitCount}" placeholder="Enter ${gameState.digitCount}-digit guess">
+                                <button class="guess-btn" onclick="makeGuess(${i})">Guess</button>
+                            </div>
+                        `;
+                    }
+
+                    // Results display section - Show results from each opponent
+                    if (player.results && player.results.length > 0) {
+                        content += `<div class="results-container">`;
+                        
+                        // Show only most recent results (reverse order)
+                        const latestResults = [...player.results].reverse();
+                        const displayedResults = latestResults.filter((r, index) => 
+                            latestResults.findIndex(r2 => r2.from === r.from) === index
+                        ).slice(0, 3); // Show up to 3 results
+                        
+                        displayedResults.forEach(result => {
+                            content += `
+                                <div class="result-item" id="result-${player.id}-${result.from}-${result.timestamp}">
+                                    <div class="result-header">${playerNames[result.from]}'s guess:</div>
+                                    <div class="current-guess">${result.guess}</div>
+                                    <div class="result-badge">
+                                        <span class="strike">⚾ ${result.strike}S</span> 
+                                        <span class="ball">⚾ ${result.ball}B</span>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        
+                        content += `</div>`;
+                    }
+                }
+
+                playerCard.innerHTML = content;
+                container.appendChild(playerCard);
+            }
+        }
+
+        function setSecretNumber(playerId) {
+            const input = document.getElementById(`secret-${playerId}`);
+            const number = input.value.trim();
+
+            if (!isValidNumber(number)) {
+                alert(`Please enter a ${gameState.digitCount}-digit number. (0-9, no duplicates)`);
+                return;
+            }
+
+            gameState.players[playerId].secretNumber = number;
+            gameState.players[playerId].hasSetNumber = true;
+
+            addLog(`${playerNames[playerId]} has set their secret number (${gameState.digitCount} digits).`);
+
+            // Next player
+            let nextPlayer = playerId + 1;
+            if (nextPlayer < gameState.playerCount) {
+                gameState.currentTurn = nextPlayer;
+                updateGameStatus(`${playerNames[nextPlayer]}'s turn to set secret number (${gameState.digitCount} digits)`);
+            } else {
+                // All players have set their numbers
+                gameState.gamePhase = 'playing';
+                gameState.currentTurn = 0;
+                updateGameStatus(`🎮 Game Start! ${playerNames[0]}'s turn (${gameState.digitCount} digits)`);
+            }
+
+            renderPlayers();
+        }
+
+        function makeGuess(guesserId) {
+            const input = document.getElementById(`guess-${guesserId}`);
+            const guess = input.value.trim();
+
+            if (!isValidNumber(guess)) {
+                alert(`Please enter a valid ${gameState.digitCount}-digit number.`);
+                return;
+            }
+
+            let hasStrike = false;
+            let hasOut = false;
+            let outPlayerId = null;
+
+            // Calculate and store results for all opponents
+            for (let i = 0; i < gameState.playerCount; i++) {
+                if (i !== guesserId && !gameState.players[i].eliminated) {
+                    const result = calculateBaseball(guess, gameState.players[i].secretNumber);
+                    
+                    // Add guess result to opponent's results array
+                    const timestamp = Date.now();
+                    gameState.players[i].results.push({
+                        from: guesserId,
+                        guess: guess,
+                        strike: result.strike,
+                        ball: result.ball,
+                        timestamp: timestamp
+                    });
+
+                    addLog(`${playerNames[guesserId]} ➔ ${playerNames[i]}: ${guess} (${result.strike}S ${result.ball}B)`);
+
+                    // Check for strikes (for visual effect)
+                    if (result.strike > 0) {
+                        hasStrike = true;
+                    }
+
+                    // Check for all strikes (opponent is out)
+                    if (result.strike === gameState.digitCount) {
+                        gameState.players[i].eliminated = true;
+                        hasOut = true;
+                        outPlayerId = i;
+                        addLog(`🔥 ${playerNames[i]} is out! (Secret number: ${gameState.players[i].secretNumber})`);
+                        
+                        // Add out effect
+                        setTimeout(() => {
+                            const outCard = document.getElementById(`player-${i}`);
+                            if (outCard) {
+                                outCard.classList.add('out-effect');
+                                setTimeout(() => {
+                                    outCard.classList.remove('out-effect');
+                                }, 800);
+                            }
+                        }, 100);
+                        
+                        // Check if game should end
+                        checkGameEnd();
+                    }
+                }
+            }
+
+            // Add strike effect to all opponent cards that received strikes
+            if (hasStrike) {
+                for (let i = 0; i < gameState.playerCount; i++) {
+                    if (i !== guesserId && !gameState.players[i].eliminated) {
+                        setTimeout(() => {
+                            const card = document.getElementById(`player-${i}`);
+                            if (card) {
+                                card.classList.add('strike-effect');
+                                setTimeout(() => {
+                                    card.classList.remove('strike-effect');
+                                }, 500);
+                            }
+                        }, 100);
+                    }
+                }
+            }
+
+            // Add flash effect to result items
+            setTimeout(() => {
+                for (let i = 0; i < gameState.playerCount; i++) {
+                    if (i !== guesserId && gameState.players[i].results.length > 0) {
+                        const latestResult = gameState.players[i].results[gameState.players[i].results.length - 1];
+                        const resultElement = document.getElementById(`result-${i}-${guesserId}-${latestResult.timestamp}`);
+                        if (resultElement) {
+                            resultElement.classList.add('strike-flash');
+                            setTimeout(() => {
+                                resultElement.classList.remove('strike-flash');
+                            }, 500);
+                        }
+                    }
+                }
+            }, 200);
+
+            // Record in guesser's guesses array
+            gameState.players[guesserId].guesses.push({
+                guess: guess,
+                timestamp: Date.now()
+            });
+
+            // Next turn (among alive players) - only if game is still in playing phase
+            if (gameState.gamePhase === 'playing') {
+                let nextTurn = guesserId;
+                let attempts = 0;
+                do {
+                    nextTurn = (nextTurn + 1) % gameState.playerCount;
+                    attempts++;
+                    if (attempts > gameState.playerCount * 2) break; // Prevent infinite loop
+                } while (gameState.players[nextTurn].eliminated && nextTurn !== guesserId);
+
+                gameState.currentTurn = nextTurn;
+                updateGameStatus(`${playerNames[nextTurn]}'s turn (${gameState.digitCount} digits)`);
+            }
+
+            input.value = '';
+            renderPlayers();
+        }
+
+        function createConfetti() {
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                confetti.style.animationDuration = Math.random() * 2 + 2 + 's';
+                confetti.style.width = Math.random() * 10 + 5 + 'px';
+                confetti.style.height = confetti.style.width;
+                document.body.appendChild(confetti);
+                
+                setTimeout(() => {
+                    confetti.remove();
+                }, 5000);
+            }
+        }
+
+        function checkGameEnd() {
+            const alivePlayers = gameState.players.filter(p => !p.eliminated);
+            
+            if (alivePlayers.length === 1) {
+                // Winner decided
+                gameState.gamePhase = 'ended';
+                const winner = alivePlayers[0];
+                
+                // Add winner effect
+                setTimeout(() => {
+                    const winnerCard = document.getElementById(`player-${winner.id}`);
+                    if (winnerCard) {
+                        winnerCard.classList.add('winner');
+                    }
+                    createConfetti();
+                }, 500);
+                
+                updateGameStatus(`🏆 ${playerNames[winner.id]} wins! Game Over 🏆`);
+                addLog(`🏆 Game Over - ${playerNames[winner.id]} wins! 🏆`);
+                showReplayButton();
+            } else if (alivePlayers.length === 0) {
+                gameState.gamePhase = 'ended';
+                updateGameStatus(`🤝 Draw! Game Over 🤝`);
+                addLog(`🤝 Game Over - Draw`);
+                showReplayButton();
+            }
+        }
+
+        function showReplayButton() {
+            // Hide start button, show replay button
+            document.querySelector('.game-start-btn').style.display = 'none';
+            document.getElementById('replayBtn').style.display = 'inline-block';
+        }
+
+        function isValidNumber(number) {
+            if (number.length !== gameState.digitCount || isNaN(number)) return false;
+            const digits = number.split('');
+            return new Set(digits).size === gameState.digitCount;
+        }
+
+        function calculateBaseball(guess, answer) {
+            let strike = 0;
+            let ball = 0;
+            
+            for (let i = 0; i < gameState.digitCount; i++) {
+                if (guess[i] === answer[i]) {
+                    strike++;
+                } else if (answer.includes(guess[i])) {
+                    ball++;
+                }
+            }
+            
+            return { strike, ball };
+        }
+
+        function startGame() {
+            if (gameState.playerCount < 2) {
+                alert('Please select number of players!');
+                return;
+            }
+
+            gameState.gamePhase = 'setting';
+            gameState.currentTurn = 0;
+            gameState.players = [];
+            
+            for (let i = 0; i < gameState.playerCount; i++) {
+                gameState.players.push({
+                    id: i,
+                    secretNumber: '',
+                    isReady: false,
+                    guesses: [],
+                    results: [], // Results received by each player
+                    eliminated: false,
+                    hasSetNumber: false
+                });
+            }
+
+            // Hide setup section during game
+            document.getElementById('setupSection').style.display = 'block';
+            document.querySelector('.game-start-btn').style.display = 'inline-block';
+            document.getElementById('replayBtn').style.display = 'none';
+            
+            updateGameStatus(`${playerNames[0]}'s turn to set secret number (${gameState.digitCount} digits)`);
+            addLog(`🎮 Game started with ${gameState.playerCount} players and ${gameState.digitCount} digits!`);
+            renderPlayers();
+        }
+
+        function updateGameStatus(message) {
+            document.getElementById('gameStatus').textContent = message;
+        }
+
+        function addLog(message) {
+            const logContainer = document.getElementById('logContainer');
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            
+            const now = new Date();
+            const timeStr = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+            
+            logEntry.textContent = `[${timeStr}] ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        // Initialize
+        setPlayerCount(2);
+        setDigitCount(4);
+    </script>
+</body>
+</html>
